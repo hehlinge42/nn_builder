@@ -1,21 +1,31 @@
 'use strict';
 
-// tag::vars[]
-const React = require('react'); // <1>
-// end::vars[]
+const React = require('react');
+// const ReactDOM = require('react-dom');
 
-// tag::employee[]
-class Employee extends React.Component{
+class Employee extends React.Component {
+
+	constructor(props) {
+		super(props);
+		this.handleDelete = this.handleDelete.bind(this);
+	}
+
+	handleDelete() {
+		this.props.onDelete(this.props.employee);
+	}
+
 	render() {
 		return (
 			<tr>
 				<td>{this.props.employee.firstName}</td>
 				<td>{this.props.employee.lastName}</td>
 				<td>{this.props.employee.description}</td>
+				<td>
+					<button onClick={this.handleDelete}>Delete</button>
+				</td>
 			</tr>
 		)
 	}
 }
-// end::employee[]
 
-export default Employee
+export default Employee;
