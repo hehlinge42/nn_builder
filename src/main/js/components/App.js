@@ -5,6 +5,9 @@ import CreateDialog from './CreateDialog';
 import AntdButton from './AntdButton';
 import CustomModal from './CustomModal';
 
+import { Button } from 'antd';
+import "../../../../node_modules/antd/dist/antd.css";
+
 const ReactDOM = require('react-dom');
 const React = require('react');
 const client = require('../client');
@@ -92,7 +95,8 @@ class App extends React.Component {
 	render() {
 		return (
 			<div>
-				<CreateDialog attributes={this.state.attributes} onCreate={this.onCreate}/>
+				<Button type="primary">Antd Button</Button>
+				{/*<CreateDialog attributes={this.state.attributes} onCreate={this.onCreate}/> */}
 				{/* <AntdButton attributes={this.state.attributes} onCreate={this.onCreate}/> */}
 				{/* <CustomModal attributes={this.state.attributes} onCreate={this.onCreate}/> */}
 				<EmployeeList employees={this.state.employees}
