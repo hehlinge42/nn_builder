@@ -2,11 +2,9 @@
 
 import EmployeeList from './EmployeeList';
 import CreateDialog from './CreateDialog';
-import AntdButton from './AntdButton';
-import CustomModal from './CustomModal';
 
-import { Button } from 'antd';
-import "../../../../node_modules/antd/dist/antd.css";
+import Button from "@material-ui/core/Button";
+import FormDialog from './FormDialog';
 
 const ReactDOM = require('react-dom');
 const React = require('react');
@@ -95,10 +93,8 @@ class App extends React.Component {
 	render() {
 		return (
 			<div>
-				<Button type="primary">Antd Button</Button>
-				{/*<CreateDialog attributes={this.state.attributes} onCreate={this.onCreate}/> */}
-				{/* <AntdButton attributes={this.state.attributes} onCreate={this.onCreate}/> */}
-				{/* <CustomModal attributes={this.state.attributes} onCreate={this.onCreate}/> */}
+				<FormDialog attributes={this.state.attributes} onCreate={this.onCreate}/>
+				{/* <CreateDialog attributes={this.state.attributes} onCreate={this.onCreate}/> */}
 				<EmployeeList employees={this.state.employees}
 							  links={this.state.links}
 							  pageSize={this.state.pageSize}

@@ -1,7 +1,5 @@
 'use strict';
 
-import { Button } from 'antd';
-
 const React = require('react');
 const ReactDOM = require('react-dom');
 
@@ -38,20 +36,14 @@ class CreateDialog extends React.Component {
 
 		return (
 			<div>
-				<Button href="#createEmployee" type="primary" shape="circle">Create</Button>
-
+				<a href="#createEmployee">Create</a>
 				<div id="createEmployee" className="modalDialog">
 					<div>
 						<a href="#" title="Close" className="close">X</a>
-
 						<h2>Create new employee</h2>
-
 						<form>
 							{inputs}
-							{/* <button onClick={this.handleSubmit}>Create</button> */}
-                            <Button type="primary" shape="circle" onClick={this.handleSubmit}>
-                                CreateShabang
-                            </Button>
+							<button onClick={this.handleSubmit}>Create</button>
 						</form>
 					</div>
 				</div>
