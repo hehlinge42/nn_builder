@@ -1,6 +1,7 @@
 'use strict';
 
 import EmployeeList from './EmployeeList';
+import EmployeeGrid from './EmployeeGrid';
 import CreateDialog from './CreateDialog';
 
 import Button from "@material-ui/core/Button";
@@ -10,13 +11,14 @@ const ReactDOM = require('react-dom');
 const React = require('react');
 const client = require('../client');
 const root = '/api';
+const when = require('when')
 const follow = require('../follow');
 
 class App extends React.Component {
 
 	constructor(props) {
 		super(props);
-		this.state = {employees: [], attributes: [], pageSize: 2, links: {}};
+		this.state = {employees: [], attributes: [], pageSize: 2, links: {}, loadedData: false};
 		this.updatePageSize = this.updatePageSize.bind(this);
 		this.onCreate = this.onCreate.bind(this);
 		this.onDelete = this.onDelete.bind(this);
@@ -24,12 +26,26 @@ class App extends React.Component {
 	}
 
 	onNavigate(navUri) {
-		client({method: 'GET', path: navUri}).done(employeeCollection => {
+		client({
+			method: 'GET',
+			path: navUri
+		}).then(employeeCollection => {
+			this.links = employeeCollection.entity._links;
+
+			return employeeCollection.entity._embedded.employees.map(employee =>
+					client({
+						method: 'GET',
+						path: employee._links.self.href
+					})
+			);
+		}).then(employeePromises => {
+			return when.all(employeePromises);
+		}).done(employees => {
 			this.setState({
-				employees: employeeCollection.entity._embedded.employees,
-				attributes: this.state.attributes,
+				employees: employees,
+				attributes: Object.keys(this.schema.properties),
 				pageSize: this.state.pageSize,
-				links: employeeCollection.entity._links
+				links: this.links,
 			});
 		});
 	}
@@ -52,12 +68,16 @@ class App extends React.Component {
 				this.onNavigate(response.entity._links.self.href);
 			}
 		});
+		this.setState(this.state);
 	}
 
-	onDelete(employee) {
-		client({method: 'DELETE', path: employee._links.self.href}).done(response => {
+	onDelete(href) {
+		client({method: 'DELETE', path: href}).done(response => {
 			this.loadFromServer(this.state.pageSize);
 		});
+		// client({method: 'DELETE', path: employee._links.self.href}).done(response => {
+		// 	this.loadFromServer(this.state.pageSize);
+		// });
 	}
 
 	updatePageSize(pageSize) {
@@ -67,7 +87,8 @@ class App extends React.Component {
 	}
 
 	loadFromServer(pageSize) {
-		follow(client, root, [{rel: 'employees', params: {size: pageSize}}]
+		follow(client, root, [
+			{rel: 'employees', params: {size: pageSize}}]
 		).then(employeeCollection => {
 			return client({
 				method: 'GET',
@@ -75,27 +96,48 @@ class App extends React.Component {
 				headers: {'Accept': 'application/schema+json'}
 			}).then(schema => {
 				this.schema = schema.entity;
+				this.links = employeeCollection.entity._links;
 				return employeeCollection;
 			});
-		}).done(employeeCollection => {
+		}).then(employeeCollection => {
+			return employeeCollection.entity._embedded.employees.map(employee =>
+					client({
+						method: 'GET',
+						path: employee._links.self.href
+					})
+			);
+		}).then(employeePromises => {
+			return when.all(employeePromises);
+		}).done(employees => {
 			this.setState({
-				employees: employeeCollection.entity._embedded.employees,
+				employees: employees,
 				attributes: Object.keys(this.schema.properties),
 				pageSize: pageSize,
-				links: employeeCollection.entity._links});
+				links: this.links,
+				loadedData: true
+			});
 		});
 	}
 
 	componentDidMount() {
+		console.log("in componentDidMount")
 		this.loadFromServer(this.state.pagesize);
+		console.log("out of componentDidMount")
+		console.log(this.state)
 	}
 
 	render() {
+		console.log("Renders called employee grid");
+
+		
+		if (!this.state.loadedData) {
+			return <div/>;
+		}
 		return (
 			<div>
 				<FormDialog attributes={this.state.attributes} onCreate={this.onCreate}/>
 				{/* <CreateDialog attributes={this.state.attributes} onCreate={this.onCreate}/> */}
-				<EmployeeList employees={this.state.employees}
+				<EmployeeGrid employees={this.state.employees}
 							  links={this.state.links}
 							  pageSize={this.state.pageSize}
 							  onNavigate={this.onNavigate}

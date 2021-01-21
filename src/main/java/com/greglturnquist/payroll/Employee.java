@@ -20,6 +20,9 @@ import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Version;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @author Greg Turnquist
@@ -28,10 +31,11 @@ import javax.persistence.Id;
 @Entity // <1>
 public class Employee {
 
-	private @Id @GeneratedValue Long id; // <2>
+	private @Id @GeneratedValue Long id;
 	private String firstName;
 	private String lastName;
 	private String description;
+	private @Version @JsonIgnore Long version;
 
 	private Employee() {}
 

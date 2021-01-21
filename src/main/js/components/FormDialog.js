@@ -6,6 +6,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import AddIcon from '@material-ui/icons/Add';
 
 const ReactDOM = require('react-dom');
 const client = require('../client');
@@ -22,8 +23,6 @@ class FormDialog extends React.Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleClickOpen = this.handleClickOpen.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
-        // this.pushEmployee = this.pushEmployee.bind(this);
-
     }
 
     handleClickOpen() {
@@ -36,42 +35,17 @@ class FormDialog extends React.Component {
         console.log("CANCEL FDP")
         this.setState({open: false});
     };
-
-    // pushEmployee(newEmployee) {
-	// 	follow(client, root, ['employees']).then(employeeCollection => {
-	// 		return client({
-	// 			method: 'POST',
-	// 			path: employeeCollection.entity._links.self.href,
-	// 			entity: newEmployee,
-	// 			headers: {'Content-Type': 'application/json'}
-	// 		})
-	// 	}).then(response => {
-	// 		return follow(client, root, [
-	// 			{rel: 'employees', params: {'size': this.state.pageSize}}]);
-	// 	}).done(response => {
-	// 		if (typeof response.entity._links.last !== "undefined") {
-	// 			this.onNavigate(response.entity._links.last.href);
-	// 		} else {
-	// 			this.onNavigate(response.entity._links.self.href);
-	// 		}
-	// 	});
-    // }
     
     handleSubmit(e) {
-        console.log("SUBMIT FDP")
         e.preventDefault();
         firstName = document.getElementById("firstName").value;
         lastName = document.getElementById("lastName").value;
-        email = document.getElementById("email").value;
-        
-        console.log(firstName)
-        console.log(lastName)
-        console.log(email)
+        description = document.getElementById("description").value;
 
         const newEmployee = {
             'firstName': firstName,
             'lastName': lastName,
-            'email': email
+            'description': description
         };
 		
         this.props.onCreate(newEmployee);
@@ -81,8 +55,11 @@ class FormDialog extends React.Component {
     render() {
         return (
             <div>
-            <Button variant="contained" color="primary" onClick={this.handleClickOpen}>
-                Open form dialog
+            <Button variant="contained"
+                    color="primary"
+                    onClick={this.handleClickOpen}
+                    startIcon={<AddIcon />}>
+                Create new user
             </Button>
             <Dialog open={this.state.open} onClose={this.handleCancel} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Create New User</DialogTitle>
@@ -109,9 +86,9 @@ class FormDialog extends React.Component {
                 <TextField
                     autoFocus
                     margin="dense"
-                    id="email"
-                    label="Email Address"
-                    type="email"
+                    id="description"
+                    label="Description"
+                    type="search"
                     fullWidth
                 />
                 </DialogContent>
