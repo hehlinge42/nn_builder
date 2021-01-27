@@ -67,17 +67,19 @@ class App extends React.Component {
 			} else {
 				this.onNavigate(response.entity._links.self.href);
 			}
+			console.log("AVANT LOG FROM SERVEUR")
+			this.loadFromServer(this.state.pageSize);
+			console.log("APRES LOG FROM SERVEUR")
 		});
 		this.setState(this.state);
+		console.log("APRES SET STATE")
+		console.log(this.state.employees)
 	}
 
 	onDelete(href) {
 		client({method: 'DELETE', path: href}).done(response => {
 			this.loadFromServer(this.state.pageSize);
 		});
-		// client({method: 'DELETE', path: employee._links.self.href}).done(response => {
-		// 	this.loadFromServer(this.state.pageSize);
-		// });
 	}
 
 	updatePageSize(pageSize) {
@@ -127,9 +129,10 @@ class App extends React.Component {
 	}
 
 	render() {
-		console.log("Renders called employee grid");
+		console.log("In App.js Renders called employee grid");
 
-		
+		console.log(this.state.employees)
+
 		if (!this.state.loadedData) {
 			return <div/>;
 		}
@@ -142,7 +145,8 @@ class App extends React.Component {
 							  pageSize={this.state.pageSize}
 							  onNavigate={this.onNavigate}
 							  onDelete={this.onDelete}
-							  updatePageSize={this.updatePageSize}/>
+							  updatePageSize={this.updatePageSize}
+							  loadFromServer={this.loadFromServer}/>
 			</div>
 		)
 	}

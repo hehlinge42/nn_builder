@@ -8,12 +8,11 @@ import DeleteIcon from '@material-ui/icons/Delete';
 class EmployeeGrid extends React.Component {
 
     constructor(props) {
+        console.log("CONSTRUCTOR OF EMPLOYEE GRID")
         super(props);
-        this.setSelection = this.setSelection.bind(this);
-        // this.update = this.update.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
+        this.createEmployeeList = this.createEmployeeList.bind(this);
         this.hrefs = {}
-        this.selected = []
         this.columns = [
             { field: 'id', headerName: 'ID', width: 70 },
             { field: 'firstName', headerName: 'First name', width: 130 },
@@ -21,46 +20,63 @@ class EmployeeGrid extends React.Component {
             { field: 'description', headerName: 'Description', width: 200 }
         ];
         
+        let employeeList = this.createEmployeeList();
+        this.state={rows: employeeList,
+                    selected: [],
+                    nbRender: 1
+            }
+        console.log(this.state.rows);
+    }
+
+    createEmployeeList() {
         let employeeList = [];
         let id = 1;
         for (const employee of this.props.employees) {
             this.hrefs[id] = employee.url;
             employeeList.push({
-                'id': id,
-                'firstName': employee.entity.firstName,
-                'lastName': employee.entity.lastName,
-                'description': employee.entity.description
+                id: id,
+                firstName: employee.entity.firstName,
+                lastName: employee.entity.lastName,
+                description: employee.entity.description
             });
             id++;
         }
-        console.log(this.hrefs)
         console.log(employeeList)
-        this.state={rows: employeeList}
-        console.log(this.state.rows);
+        return employeeList;
     }
-    setSelection(rowIds) {
-        this.selected = rowIds;
+
+    componentDidUpdate() {
+        console.log("COMPONENT DID UPDATE OU PAS BORDEL");
     }
 
     handleDelete() {
-        for (let id of this.selected) {
-            this.props.onDelete(this.hrefs[id]);
+        let localSelected = this.state.selected;
+        let dataToBeKept = this.state.rows.filter(function (item) {
+            return !(localSelected.includes(String(item.id)))
+        })
+        for (let id of this.state.selected) {
+            this.props.onDelete(this.hrefs[id]); //delete from database
         }
-        this.setState(this.state);
+        this.setState({
+            rows: dataToBeKept,
+            selected: [],
+        })
     }
 
     render() {
-        console.log("Renders called employee grid");
-
+        console.log("RERENDER EMPLOYEE GRID")
+        const employeeList = this.createEmployeeList()
+        console.log(employeeList)
         return (
             <div>
                 <div style={{ height: 400, width: '100%' }}>
-                    <DataGrid rows={this.state.rows} 
+                    <DataGrid id={this.state.nbRender}
+                                rows={employeeList} 
                                 columns={this.columns}
                                 pageSize={this.props.pageSize}
                                 checkboxSelection 
                                 onSelectionChange={(newSelection) => {
-                                    this.setSelection(newSelection.rowIds);
+                                    this.setState({selected: newSelection.rowIds})
                                 }}/>
                 </div>
                 <div>

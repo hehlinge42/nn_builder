@@ -68,7 +68,6 @@ class FormDialog extends React.Component {
                     Please fill in all fields.
                 </DialogContentText>
                 <TextField
-                    autoFocus
                     margin="dense"
                     id="firstName"
                     label="First Name"
@@ -76,7 +75,6 @@ class FormDialog extends React.Component {
                     fullWidth
                 />
                 <TextField
-                    autoFocus
                     margin="dense"
                     id="lastName"
                     label="Last Name"
@@ -84,7 +82,6 @@ class FormDialog extends React.Component {
                     fullWidth
                 />
                 <TextField
-                    autoFocus
                     margin="dense"
                     id="description"
                     label="Description"

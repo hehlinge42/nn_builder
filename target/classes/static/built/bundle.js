@@ -53912,8 +53912,16 @@ var App = /*#__PURE__*/function (_React$Component) {
         } else {
           _this3.onNavigate(response.entity._links.self.href);
         }
+
+        console.log("AVANT LOG FROM SERVEUR");
+
+        _this3.loadFromServer(_this3.state.pageSize);
+
+        console.log("APRES LOG FROM SERVEUR");
       });
       this.setState(this.state);
+      console.log("APRES SET STATE");
+      console.log(this.state.employees);
     }
   }, {
     key: "onDelete",
@@ -53925,9 +53933,7 @@ var App = /*#__PURE__*/function (_React$Component) {
         path: href
       }).done(function (response) {
         _this4.loadFromServer(_this4.state.pageSize);
-      }); // client({method: 'DELETE', path: employee._links.self.href}).done(response => {
-      // 	this.loadFromServer(this.state.pageSize);
-      // });
+      });
     }
   }, {
     key: "updatePageSize",
@@ -53988,7 +53994,8 @@ var App = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      console.log("Renders called employee grid");
+      console.log("In App.js Renders called employee grid");
+      console.log(this.state.employees);
 
       if (!this.state.loadedData) {
         return /*#__PURE__*/React.createElement("div", null);
@@ -54003,7 +54010,8 @@ var App = /*#__PURE__*/function (_React$Component) {
         pageSize: this.state.pageSize,
         onNavigate: this.onNavigate,
         onDelete: this.onDelete,
-        updatePageSize: this.updatePageSize
+        updatePageSize: this.updatePageSize,
+        loadFromServer: this.loadFromServer
       }));
     }
   }]);
@@ -54252,12 +54260,11 @@ var EmployeeGrid = /*#__PURE__*/function (_React$Component) {
 
     _classCallCheck(this, EmployeeGrid);
 
+    console.log("CONSTRUCTOR OF EMPLOYEE GRID");
     _this = _super.call(this, props);
-    _this.setSelection = _this.setSelection.bind(_assertThisInitialized(_this)); // this.update = this.update.bind(this);
-
     _this.handleDelete = _this.handleDelete.bind(_assertThisInitialized(_this));
+    _this.createEmployeeList = _this.createEmployeeList.bind(_assertThisInitialized(_this));
     _this.hrefs = {};
-    _this.selected = [];
     _this.columns = [{
       field: 'id',
       headerName: 'ID',
@@ -54275,54 +54282,68 @@ var EmployeeGrid = /*#__PURE__*/function (_React$Component) {
       headerName: 'Description',
       width: 200
     }];
-    var employeeList = [];
-    var id = 1;
 
-    var _iterator = _createForOfIteratorHelper(_this.props.employees),
-        _step;
+    var employeeList = _this.createEmployeeList();
 
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var employee = _step.value;
-        _this.hrefs[id] = employee.url;
-        employeeList.push({
-          'id': id,
-          'firstName': employee.entity.firstName,
-          'lastName': employee.entity.lastName,
-          'description': employee.entity.description
-        });
-        id++;
-      }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
-    }
-
-    console.log(_this.hrefs);
-    console.log(employeeList);
     _this.state = {
-      rows: employeeList
+      rows: employeeList,
+      selected: [],
+      nbRender: 1
     };
     console.log(_this.state.rows);
     return _this;
   }
 
   _createClass(EmployeeGrid, [{
-    key: "setSelection",
-    value: function setSelection(rowIds) {
-      this.selected = rowIds;
+    key: "createEmployeeList",
+    value: function createEmployeeList() {
+      var employeeList = [];
+      var id = 1;
+
+      var _iterator = _createForOfIteratorHelper(this.props.employees),
+          _step;
+
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var employee = _step.value;
+          this.hrefs[id] = employee.url;
+          employeeList.push({
+            id: id,
+            firstName: employee.entity.firstName,
+            lastName: employee.entity.lastName,
+            description: employee.entity.description
+          });
+          id++;
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+
+      console.log(employeeList);
+      return employeeList;
+    }
+  }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate() {
+      console.log("COMPONENT DID UPDATE OU PAS BORDEL");
     }
   }, {
     key: "handleDelete",
     value: function handleDelete() {
-      var _iterator2 = _createForOfIteratorHelper(this.selected),
+      var localSelected = this.state.selected;
+      var dataToBeKept = this.state.rows.filter(function (item) {
+        return !localSelected.includes(String(item.id));
+      });
+
+      var _iterator2 = _createForOfIteratorHelper(this.state.selected),
           _step2;
 
       try {
         for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var _id = _step2.value;
-          this.props.onDelete(this.hrefs[_id]);
+          var id = _step2.value;
+          this.props.onDelete(this.hrefs[id]); //delete from database
         }
       } catch (err) {
         _iterator2.e(err);
@@ -54330,26 +54351,34 @@ var EmployeeGrid = /*#__PURE__*/function (_React$Component) {
         _iterator2.f();
       }
 
-      this.setState(this.state);
+      this.setState({
+        rows: dataToBeKept,
+        selected: []
+      });
     }
   }, {
     key: "render",
     value: function render() {
       var _this2 = this;
 
-      console.log("Renders called employee grid");
+      console.log("RERENDER EMPLOYEE GRID");
+      var employeeList = this.createEmployeeList();
+      console.log(employeeList);
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", {
         style: {
           height: 400,
           width: '100%'
         }
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_material_ui_data_grid__WEBPACK_IMPORTED_MODULE_0__["DataGrid"], {
-        rows: this.state.rows,
+        id: this.state.nbRender,
+        rows: employeeList,
         columns: this.columns,
         pageSize: this.props.pageSize,
         checkboxSelection: true,
         onSelectionChange: function onSelectionChange(newSelection) {
-          _this2.setSelection(newSelection.rowIds);
+          _this2.setState({
+            selected: newSelection.rowIds
+          });
         }
       })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2__["default"], {
         variant: "contained",
@@ -54654,21 +54683,18 @@ var FormDialog = /*#__PURE__*/function (_React$Component) {
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_DialogTitle__WEBPACK_IMPORTED_MODULE_7__["default"], {
         id: "form-dialog-title"
       }, "Create New User"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_DialogContent__WEBPACK_IMPORTED_MODULE_5__["default"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_DialogContentText__WEBPACK_IMPORTED_MODULE_6__["default"], null, "Please fill in all fields."), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_2__["default"], {
-        autoFocus: true,
         margin: "dense",
         id: "firstName",
         label: "First Name",
         type: "search",
         fullWidth: true
       }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_2__["default"], {
-        autoFocus: true,
         margin: "dense",
         id: "lastName",
         label: "Last Name",
         type: "search",
         fullWidth: true
       }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_2__["default"], {
-        autoFocus: true,
         margin: "dense",
         id: "description",
         label: "Description",
