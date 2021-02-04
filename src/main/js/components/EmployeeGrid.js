@@ -1,14 +1,17 @@
-import { DataGrid } from '@material-ui/data-grid';
+import { DataGrid, CellParams, GridApi, ColDef } from '@material-ui/data-grid';
+
 import * as React from 'react';
 
 import Button from '@material-ui/core/Button';
-import { makeStyles } from '@material-ui/core/styles';
+import IconButton from '@material-ui/core/IconButton';
+import FormDialogUpdate from './FormDialogUpdate';
 import DeleteIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
+
 
 class EmployeeGrid extends React.Component {
 
     constructor(props) {
-        console.log("CONSTRUCTOR OF EMPLOYEE GRID")
         super(props);
         this.handleDelete = this.handleDelete.bind(this);
         this.createEmployeeList = this.createEmployeeList.bind(this);
@@ -17,15 +20,37 @@ class EmployeeGrid extends React.Component {
             { field: 'id', headerName: 'ID', width: 70 },
             { field: 'firstName', headerName: 'First name', width: 130 },
             { field: 'lastName', headerName: 'Last name', width: 130 },
-            { field: 'description', headerName: 'Description', width: 200 }
+            { field: 'description', headerName: 'Description', width: 200 },
+            {
+              field: 'update',
+              headerName: 'Update',
+                renderCell: (params) => {
+                    const handleUpdate = () => {
+                        const api = params.api;
+                        const fields = api
+                            .getAllColumns()
+                            .map((c) => c.field)
+                            .filter((c) => c !== "__check__" && !!c);
+                        const thisRow = {};
+                        fields.forEach((f) => {
+                            thisRow[f] = params.getValue(f);
+                        });
+                        this.child.setState({
+                            firstName: thisRow.firstName,
+                            lastName: thisRow.lastName,
+                            description: thisRow.description,
+                            employee: this.props.employees[thisRow.id -1],
+                            open: true})
+                    }
+                    return <IconButton aria-label="delete" color="primary" onClick={handleUpdate}><EditIcon /></IconButton> 
+                }
+            }
         ];
         
         let employeeList = this.createEmployeeList();
         this.state={rows: employeeList,
-                    selected: [],
-                    nbRender: 1
-            }
-        console.log(this.state.rows);
+                    selected: []
+                }
     }
 
     createEmployeeList() {
@@ -41,12 +66,7 @@ class EmployeeGrid extends React.Component {
             });
             id++;
         }
-        console.log(employeeList)
         return employeeList;
-    }
-
-    componentDidUpdate() {
-        console.log("COMPONENT DID UPDATE OU PAS BORDEL");
     }
 
     handleDelete() {
@@ -64,15 +84,22 @@ class EmployeeGrid extends React.Component {
     }
 
     render() {
-        console.log("RERENDER EMPLOYEE GRID")
         const employeeList = this.createEmployeeList()
-        console.log(employeeList)
         return (
             <div>
                 <div style={{ height: 400, width: '100%' }}>
+                    <FormDialogUpdate attributes={this.state.attributes} 
+                                        onUpdate={this.props.onUpdate}
+                                        open={this.state.open}
+                                        ref={ref => (this.child = ref)}
+                                        setState={state => this.setState(state)}/>
                     <DataGrid id={this.state.nbRender}
+
                                 rows={employeeList} 
-                                columns={this.columns}
+                                columns={this.columns.map((column) => ({
+                                    ...column,
+                                    disableClickEventBubbling:true,
+                                }))}
                                 pageSize={this.props.pageSize}
                                 checkboxSelection 
                                 onSelectionChange={(newSelection) => {

@@ -20,18 +20,14 @@
   },
   "homepage": "https://github.com/spring-guides/tut-react-and-spring-data-rest",
   "dependencies": {
+    "react": "^16.5.2",
+    "react-dom": "^16.5.2",
+    "rest": "^1.3.1",
     "@material-ui/core": "^4.11.2",
     "@material-ui/data-grid": "^4.0.0-alpha.17",
     "@material-ui/icons": "^4.11.2",
-    "react": "^16.5.2",
-    "react-dom": "^16.5.2",
-    "rest": "^1.3.1"
-  },
-  "scripts": {
-    "watch:java": "onchange 'src/main/java/*' -- npm run build:java",
-    "watch:css": "onchange 'src/main/resource/static/*.css' -- npm run build:css",
-    "watch:js": "onchange 'src/main/js/*' -- npm run build:js",
-    "watch": "npm run watch:css & npm run watch:js & npm run watch:java"
+    "sockjs-client": "^1.0.3",
+    "stompjs": "^2.3.3"
   },
   "devDependencies": {
     "@babel/core": "^7.1.0",
@@ -41,5 +37,11 @@
     "babel-plugin-import": "^1.5.0",
     "webpack": "^4.19.1",
     "webpack-cli": "^3.1.0"
+  },
+  "scripts": {
+    "watch:java": "onchange 'src/main/java/*' -- npm run build:java",
+    "watch:css": "onchange 'src/main/resource/static/*.css' -- npm run build:css",
+    "watch:js": "onchange 'src/main/js/*' -- npm run build:js",
+    "watch": "npm run watch:css & npm run watch:js & npm run watch:java"
   }
 }

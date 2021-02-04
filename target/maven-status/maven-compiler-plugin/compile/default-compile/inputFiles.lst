@@ -1,5 +1,7 @@
 /Users/Hugo/Desktop/X-HEC/Polytechnique/nn_builder_app/src/main/java/com/greglturnquist/payroll/EmployeeRepository.java
 /Users/Hugo/Desktop/X-HEC/Polytechnique/nn_builder_app/src/main/java/com/greglturnquist/payroll/ReactAndSpringDataRestApplication.java
+/Users/Hugo/Desktop/X-HEC/Polytechnique/nn_builder_app/src/main/java/com/greglturnquist/payroll/EventHandler.java
+/Users/Hugo/Desktop/X-HEC/Polytechnique/nn_builder_app/src/main/java/com/greglturnquist/payroll/WebSocketConfiguration.java
 /Users/Hugo/Desktop/X-HEC/Polytechnique/nn_builder_app/src/main/java/com/greglturnquist/payroll/DatabaseLoader.java
 /Users/Hugo/Desktop/X-HEC/Polytechnique/nn_builder_app/src/main/java/com/greglturnquist/payroll/HomeController.java
 /Users/Hugo/Desktop/X-HEC/Polytechnique/nn_builder_app/src/main/java/com/greglturnquist/payroll/Employee.java

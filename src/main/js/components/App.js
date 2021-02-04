@@ -1,11 +1,7 @@
 'use strict';
 
-import EmployeeList from './EmployeeList';
 import EmployeeGrid from './EmployeeGrid';
-import CreateDialog from './CreateDialog';
-
-import Button from "@material-ui/core/Button";
-import FormDialog from './FormDialog';
+import FormDialogCreate from './FormDialogCreate';
 
 const ReactDOM = require('react-dom');
 const React = require('react');
@@ -13,16 +9,19 @@ const client = require('../client');
 const root = '/api';
 const when = require('when')
 const follow = require('../follow');
+const stompClient = require('../websocket-listener');
+
 
 class App extends React.Component {
 
 	constructor(props) {
 		super(props);
-		this.state = {employees: [], attributes: [], pageSize: 2, links: {}, loadedData: false};
-		this.updatePageSize = this.updatePageSize.bind(this);
+		this.state = {employees: [], attributes: [], links: {}, loadedData: false};
 		this.onCreate = this.onCreate.bind(this);
+		this.onUpdate = this.onUpdate.bind(this);
 		this.onDelete = this.onDelete.bind(this);
 		this.onNavigate = this.onNavigate.bind(this);
+		this.refreshCurrentPage = this.refreshCurrentPage.bind(this)
 	}
 
 	onNavigate(navUri) {
@@ -44,7 +43,6 @@ class App extends React.Component {
 			this.setState({
 				employees: employees,
 				attributes: Object.keys(this.schema.properties),
-				pageSize: this.state.pageSize,
 				links: this.links,
 			});
 		});
@@ -60,37 +58,50 @@ class App extends React.Component {
 			})
 		}).then(response => {
 			return follow(client, root, [
-				{rel: 'employees', params: {'size': this.state.pageSize}}]);
+				{rel: 'employees'}]);
 		}).done(response => {
 			if (typeof response.entity._links.last !== "undefined") {
 				this.onNavigate(response.entity._links.last.href);
 			} else {
 				this.onNavigate(response.entity._links.self.href);
 			}
-			console.log("AVANT LOG FROM SERVEUR")
-			this.loadFromServer(this.state.pageSize);
-			console.log("APRES LOG FROM SERVEUR")
+			this.loadFromServer();
 		});
 		this.setState(this.state);
-		console.log("APRES SET STATE")
-		console.log(this.state.employees)
 	}
 
 	onDelete(href) {
 		client({method: 'DELETE', path: href}).done(response => {
-			this.loadFromServer(this.state.pageSize);
+			this.loadFromServer();
 		});
 	}
 
-	updatePageSize(pageSize) {
-		if (pageSize !== this.state.pageSize) {
-			this.loadFromServer(pageSize);
-		}
+	onUpdate(employee, updatedEmployee) {
+		client({
+			method: 'PUT',
+			path: employee.entity._links.self.href,
+			entity: updatedEmployee,
+			headers: {
+				'Content-Type': 'application/json',
+				'If-Match': employee.headers.Etag
+			}
+		}).done(response => {
+			this.loadFromServer();
+		}, response => {
+			if (response.status.code === 412) {
+				alert('DENIED: Unable to update ' +
+					employee.entity._links.self.href + '. Your copy is stale.');
+			}
+		});
+		console.log("Avant setState onUpdate");
+		this.setState(this.state)
+		console.log("Après setState onUpdate");
 	}
 
-	loadFromServer(pageSize) {
+	loadFromServer() {
+		console.log("Dans loadFromServer");
 		follow(client, root, [
-			{rel: 'employees', params: {size: pageSize}}]
+			{rel: 'employees'}]
 		).then(employeeCollection => {
 			return client({
 				method: 'GET',
@@ -114,38 +125,59 @@ class App extends React.Component {
 			this.setState({
 				employees: employees,
 				attributes: Object.keys(this.schema.properties),
-				pageSize: pageSize,
 				links: this.links,
 				loadedData: true
 			});
 		});
 	}
 
+	refreshCurrentPage(message) {
+		follow(client, root, [{
+			rel: 'employees'
+		}]).then(employeeCollection => {
+			this.links = employeeCollection.entity._links;
+			this.page = employeeCollection.entity.page;
+	
+			return employeeCollection.entity._embedded.employees.map(employee => {
+				return client({
+					method: 'GET',
+					path: employee._links.self.href
+				})
+			});
+		}).then(employeePromises => {
+			return when.all(employeePromises);
+		}).then(employees => {
+			this.setState({
+				page: this.page,
+				employees: employees,
+				attributes: Object.keys(this.schema.properties),
+				links: this.links
+			});
+		});
+	}
+
 	componentDidMount() {
-		console.log("in componentDidMount")
-		this.loadFromServer(this.state.pagesize);
-		console.log("out of componentDidMount")
-		console.log(this.state)
+		this.loadFromServer();
+		stompClient.register([
+			{route: '/topic/newEmployee', callback: this.refreshCurrentPage},
+			{route: '/topic/updateEmployee', callback: this.refreshCurrentPage},
+			{route: '/topic/deleteEmployee', callback: this.refreshCurrentPage}
+		]);
 	}
 
 	render() {
-		console.log("In App.js Renders called employee grid");
-
-		console.log(this.state.employees)
-
 		if (!this.state.loadedData) {
 			return <div/>;
 		}
 		return (
 			<div>
-				<FormDialog attributes={this.state.attributes} onCreate={this.onCreate}/>
+				<FormDialogCreate attributes={this.state.attributes} onCreate={this.onCreate}/>
 				{/* <CreateDialog attributes={this.state.attributes} onCreate={this.onCreate}/> */}
 				<EmployeeGrid employees={this.state.employees}
 							  links={this.state.links}
-							  pageSize={this.state.pageSize}
 							  onNavigate={this.onNavigate}
 							  onDelete={this.onDelete}
-							  updatePageSize={this.updatePageSize}
+							  onUpdate={this.onUpdate}
 							  loadFromServer={this.loadFromServer}/>
 			</div>
 		)

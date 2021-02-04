@@ -13,64 +13,59 @@ const client = require('../client');
 const root = '/api';
 const follow = require('../follow');
 
-// export default function FormDialog() {
-class FormDialog extends React.Component {
+class FormDialogUpdate extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
+            firstName: "",
+            lastName: "",
+            description: "",
+            employee: undefined,
             open: false};
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleClickOpen = this.handleClickOpen.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
     }
 
-    handleClickOpen() {
-        console.log("OPEN FDP")
-        this.setState({open: true});
-        // setOpen(true);
-    };
-
-    handleCancel() {
-        console.log("CANCEL FDP")
-        this.setState({open: false});
-    };
-    
     handleSubmit(e) {
+
         e.preventDefault();
         firstName = document.getElementById("firstName").value;
         lastName = document.getElementById("lastName").value;
         description = document.getElementById("description").value;
 
-        const newEmployee = {
+        const updatedEmployee = {
             'firstName': firstName,
             'lastName': lastName,
             'description': description
         };
 		
-        this.props.onCreate(newEmployee);
+        this.props.onUpdate(this.state.employee, updatedEmployee);
+        this.setState({open: false});       
+    }
+
+    handleClickOpen() {
+        this.setState({open: true});
+    };
+
+    handleCancel() {
         this.setState({open: false});
     };
 
     render() {
         return (
-            <div>
-            <Button variant="contained"
-                    color="primary"
-                    onClick={this.handleClickOpen}
-                    startIcon={<AddIcon />}>
-                Create new user
-            </Button>
             <Dialog open={this.state.open} onClose={this.handleCancel} aria-labelledby="form-dialog-title">
-                <DialogTitle id="form-dialog-title">Create New User</DialogTitle>
+                <DialogTitle id="form-dialog-title">Update user</DialogTitle>
                 <DialogContent>
                 <DialogContentText>
-                    Please fill in all fields.
+                    Please update relevant fields.
                 </DialogContentText>
                 <TextField
                     margin="dense"
                     id="firstName"
                     label="First Name"
+                    defaultValue={this.state.firstName}
                     type="search"
                     fullWidth
                 />
@@ -78,6 +73,7 @@ class FormDialog extends React.Component {
                     margin="dense"
                     id="lastName"
                     label="Last Name"
+                    defaultValue={this.state.lastName}
                     type="search"
                     fullWidth
                 />
@@ -85,6 +81,7 @@ class FormDialog extends React.Component {
                     margin="dense"
                     id="description"
                     label="Description"
+                    defaultValue={this.state.description}
                     type="search"
                     fullWidth
                 />
@@ -94,13 +91,13 @@ class FormDialog extends React.Component {
                     Cancel
                 </Button>
                 <Button onClick={this.handleSubmit} color="primary">
-                    Create
+                    Update
                 </Button>
                 </DialogActions>
             </Dialog>
-            </div>
-        );
-    };
-};
+        )
+    }
+}
 
-export default FormDialog;
+
+export default FormDialogUpdate;
